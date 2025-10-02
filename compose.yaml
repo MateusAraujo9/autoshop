@@ -19,19 +19,27 @@ services:
       # Ajustes úteis em dev
       PHP_MEMORY_LIMIT: 512M
       PHP_MAX_EXECUTION_TIME: 120
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: unless-stopped
 
   mariadb:
     image: mariadb:11
     pull_policy: never
     environment:
       MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: app
-      MARIADB_USER: app
-      MARIADB_PASSWORD: app
     ports:
       - "3306:3306"           # opcional, só se quiser acessar do host
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -uroot -proot -h 127.0.0.1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
 
   node:
     image: node:23-alpine
@@ -42,6 +50,7 @@ services:
     command: sh -lc "npm ci && npm run dev -- --host 0.0.0.0"
     ports:
       - "5173:5173"
+    restart: unless-stopped
 
 volumes:
   caddy_data:

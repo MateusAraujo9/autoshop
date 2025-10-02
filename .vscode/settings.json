@@ -15,5 +15,17 @@
             "password": "app",
             "database": "app"
         }
-    ]
+    ],
+    "intelephense.environment.phpVersion": "8.3",
+    // Inclui o vendor do Laravel (caminho relativo ao workspace)
+    "intelephense.environment.includePaths": [
+        "backend/vendor"
+    ],
+    // Garanta que você NÃO está excluindo vendor
+    "intelephense.files.exclude": [
+        "**/.git/**",
+        "**/node_modules/**",
+        "**/storage/**"
+    ],
+    "php.suggest.basic": false
 }
