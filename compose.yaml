@@ -1,0 +1,49 @@
+services:
+  frankenphp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: autoshop/frankenphp:dev
+    pull_policy: never
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./:/app
+      - ./Caddyfile:/etc/frankenphp/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    tty: true
+    environment:
+      # Ajustes úteis em dev
+      PHP_MEMORY_LIMIT: 512M
+      PHP_MAX_EXECUTION_TIME: 120
+
+  mariadb:
+    image: mariadb:11
+    pull_policy: never
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: app
+      MARIADB_USER: app
+      MARIADB_PASSWORD: app
+    ports:
+      - "3306:3306"           # opcional, só se quiser acessar do host
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  node:
+    image: node:23-alpine
+    pull_policy: never
+    working_dir: /app/frontend
+    volumes:
+      - ./:/app
+    command: sh -lc "npm ci && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  mariadb_data:
